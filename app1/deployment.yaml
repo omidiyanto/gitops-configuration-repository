@@ -13,14 +13,11 @@ spec:
     spec:
       containers:
       - name: golang-weatherapp
-        image: quay.io/omidiyanto/golang-weatherapp:v1.0.10
+        image: nginx:alpine
         imagePullPolicy: Always
-        envFrom:
-        - secretRef:
-            name: golang-weatherapp-secret
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         ports:
-        - containerPort: 5000
+        - containerPort: 80
