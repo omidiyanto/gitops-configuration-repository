@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-weatherapp
+spec:
+  selector:
+    matchLabels:
+      app: golang-weatherapp
+  template:
+    metadata:
+      labels:
+        app: golang-weatherapp
+    spec:
+      containers:
+      - name: golang-weatherapp
+        image: quay.io/omidiyanto/golang-weatherapp:v1.0.10
+        imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: golang-weatherapp-secret
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
