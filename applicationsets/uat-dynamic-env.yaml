@@ -17,7 +17,7 @@ spec:
       namespace: argocd
     spec:
       source:
-        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
+        repoURL: https://github.com/omidiyanto/flask-weatherapp.git
         targetRevision: '{{head_sha}}'
         path: helm/flask-weatherapp
       destination:
