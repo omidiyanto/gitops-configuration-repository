@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: generic-production
+spec:
+  generators:
+  - matrix:
+      generators:
+      # Generate for each app that deploys to all clusters
+      - list:
+          elements:
+            # List of apps that deploy to all production clusters
+            - appName: app3
+              repoPath: apps/app3/overlays/production
+      # Generate for each production cluster
+      - clusters:
+          selector:
+            matchLabels:
+              environment: production
+  template:
+    metadata:
+      name: '{{appName}}-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
+        targetRevision: HEAD
+        path: '{{repoPath}}'
+      destination:
+        server: '{{server}}'
+        namespace: production
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true 

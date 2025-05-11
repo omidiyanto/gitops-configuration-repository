@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: specific-production
+spec:
+  generators:
+  - matrix:
+      generators:
+      # Generate for specific app-cluster combinations
+      - list:
+          elements:
+            # App1 deploys to production1 and production5
+            - appName: app1
+              repoPath: apps/app1/overlays/production
+              clusterName: production1-cluster
+            - appName: app1
+              repoPath: apps/app1/overlays/production
+              clusterName: production5-cluster
+            # App2 deploys to production3, production7, and production10
+            - appName: app2
+              repoPath: apps/app2/overlays/production
+              clusterName: production3-cluster
+            - appName: app2
+              repoPath: apps/app2/overlays/production
+              clusterName: production7-cluster
+            - appName: app2
+              repoPath: apps/app2/overlays/production
+              clusterName: production10-cluster
+      # Use clusters generator to lookup cluster information
+      - clusters:
+          selector:
+            matchExpressions:
+            - key: name
+              operator: In
+              values:
+              - '{{clusterName}}'
+  template:
+    metadata:
+      name: '{{appName}}-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
+        targetRevision: HEAD
+        path: '{{repoPath}}'
+      destination:
+        server: '{{server}}'
+        namespace: production
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true 

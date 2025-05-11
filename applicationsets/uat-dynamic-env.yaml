@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: flask-weatherapp-uat
+spec:
+  generators:
+  - pullRequest:
+      github:
+        owner: omidiyanto
+        repo: flask-weatherapp
+        labels:
+        - preview
+      requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: 'flask-weatherapp-{{branch}}-{{number}}'
+      namespace: argocd
+    spec:
+      source:
+        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
+        targetRevision: '{{head_sha}}'
+        path: helm/flask-weatherapp
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: flask-weatherapp-{{branch}}-{{number}}
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
