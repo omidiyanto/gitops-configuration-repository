@@ -9,6 +9,11 @@ app.config['DATABASE'] = 'uat_apps.db'
 
 # Initialize database
 def init_db():
+    # Remove existing database file if it exists (OPTIONAL)
+    if os.path.exists(app.config['DATABASE']):
+        os.remove(app.config['DATABASE'])
+        print(f"Removed existing database: {app.config['DATABASE']}")
+    
     conn = sqlite3.connect(app.config['DATABASE'])
     c = conn.cursor()
     c.execute('''
@@ -21,6 +26,7 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+    print("Created fresh database")
 
 # Get DB connection
 def get_db():
@@ -28,13 +34,13 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-# Initialize the database
+# Initialize the database (fresh start every time)
 init_db()
 
 # Paths - Updated for new location
 APPS_DIR = os.path.abspath('../apps')
 APPSET_FILE = os.path.abspath('../applicationsets/multiple-app-uat.yaml')
-EXAMPLE_DIR = os.path.join(APPS_DIR, 'EXAMPLE')
+EXAMPLE_APP_DIR = os.path.join(APPS_DIR, 'EXAMPLE_APP')
 
 # Sync database with existing applications
 def sync_db_with_existing_apps():
@@ -50,8 +56,8 @@ def sync_db_with_existing_apps():
             app_name = element.get('app')
             repo_name = element.get('repo')
             
-            # Skip EXAMPLE app
-            if app_name == 'EXAMPLE':
+            # Skip EXAMPLE_APP app
+            if app_name == 'EXAMPLE_APP':
                 continue
                 
             # Check if app already exists in database
@@ -70,7 +76,7 @@ def sync_db_with_existing_apps():
     except Exception as e:
         print(f"Error syncing database: {str(e)}")
 
-# Call the sync function when app starts
+# Call the sync function after fresh database initialization
 sync_db_with_existing_apps()
 
 @app.route('/')
@@ -215,7 +221,7 @@ def update_appset_file(app_name, repo_name, action):
         yaml.dump(config, f, default_flow_style=False)
 
 def create_app_directory(app_name, repo_name):
-    # Create app directory structure based on EXAMPLE
+    # Create app directory structure based on EXAMPLE_APP
     app_dir = os.path.join(APPS_DIR, app_name)
     
     # Create uat directory
@@ -223,7 +229,7 @@ def create_app_directory(app_name, repo_name):
     os.makedirs(os.path.join(uat_dir, 'templates'), exist_ok=True)
     
     # Copy and modify Chart.yaml
-    with open(os.path.join(EXAMPLE_DIR, 'uat', 'Chart.yaml'), 'r') as f:
+    with open(os.path.join(EXAMPLE_APP_DIR, 'uat', 'Chart.yaml'), 'r') as f:
         chart_yaml = yaml.safe_load(f)
     
     chart_yaml['name'] = app_name
@@ -233,7 +239,7 @@ def create_app_directory(app_name, repo_name):
         yaml.dump(chart_yaml, f, default_flow_style=False)
     
     # Copy and modify values.yaml
-    with open(os.path.join(EXAMPLE_DIR, 'uat', 'values.yaml'), 'r') as f:
+    with open(os.path.join(EXAMPLE_APP_DIR, 'uat', 'values.yaml'), 'r') as f:
         values_yaml = yaml.safe_load(f)
     
     values_yaml['image']['repository'] = f"omidiyanto/{repo_name}"
@@ -245,7 +251,7 @@ def create_app_directory(app_name, repo_name):
     template_files = ['namespace.yaml', 'service.yaml', 'deployment.yaml']
     for file in template_files:
         shutil.copy(
-            os.path.join(EXAMPLE_DIR, 'uat', 'templates', file),
+            os.path.join(EXAMPLE_APP_DIR, 'uat', 'templates', file),
             os.path.join(uat_dir, 'templates', file)
         )
 
