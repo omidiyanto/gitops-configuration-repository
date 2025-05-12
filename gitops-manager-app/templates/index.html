@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAT Application Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"}
+                    },
+                    animation: {
+                        'slide-in': 'slideIn 0.3s ease-out',
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'bounce-slow': 'bounce 2s infinite'
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        
+        /* Transition effects */
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
+        
+        /* Card hover effects */
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans antialiased dark">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="fixed inset-y-0 left-0 z-30 w-64 transform transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg animate-slide-in lg:static lg:translate-x-0" id="sidebar">
+            <div class="flex items-center justify-between px-4 py-4 border-b dark:border-gray-700">
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white">UAT Manager</h1>
+                </div>
+                <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden" id="closeSidebar">
+                    <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="px-4 py-4">
+                <div class="mb-2 text-xs uppercase font-bold text-gray-500 dark:text-gray-400">Management</div>
+                <a href="#" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    Applications
+                </a>
+                <div class="mt-6 mb-2 text-xs uppercase font-bold text-gray-500 dark:text-gray-400">Resources</div>
+                <a href="https://github.com/omidiyanto/gitops-configuration-repository" target="_blank" class="flex items-center px-4 py-2 mt-1 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    GitOps Repository
+                </a>
+                <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank" class="flex items-center px-4 py-2 mt-1 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                    </svg>
+                    Kubernetes Docs
+                </a>
+                <a href="https://argoproj.github.io/argo-cd/" target="_blank" class="flex items-center px-4 py-2 mt-1 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    ArgoCD Documentation
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex flex-col flex-1 overflow-hidden">
+            <!-- Navbar -->
+            <header class="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+                <div class="flex items-center">
+                    <button class="p-1 mr-4 -ml-1 rounded-md lg:hidden" id="openSidebar">
+                        <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">UAT Application Management</h2>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="addAppBtn" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Application
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main content area -->
+            <main class="flex-1 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for app in apps %}
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden card-hover transition-all" data-app-id="{{ app.id }}">
+                        <div class="p-6">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ app.app_name }}</h3>
+                                <div class="flex items-center space-x-2">
+                                    <button class="edit-app-btn p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button class="delete-app-btn p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                    Repo: {{ app.repo_name }}
+                                </div>
+                                <div class="flex items-center mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Created: {{ app.created_at }}
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t dark:border-gray-700">
+                                <div class="flex justify-between">
+                                    <a href="#" class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">View Details</a>
+                                    <a href="#" class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">View in ArgoCD</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Empty state -->
+                    {% if not apps %}
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center p-10 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 animate-bounce-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <h3 class="mt-4 text-lg font-medium text-gray-800 dark:text-white">No applications yet</h3>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Get started by adding your first UAT application</p>
+                        <button id="emptyStateAddBtn" class="mt-4 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center transition-all duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Application
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit App Modal - Hidden by default -->
+    <div id="appModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <!-- Modal panel -->
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modalTitle">Add New Application</h3>
+                    <div class="mt-4">
+                        <form id="appForm">
+                            <input type="hidden" id="appId" value="">
+                            <div class="mb-4">
+                                <label for="appName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Application Name</label>
+                                <input type="text" id="appName" name="appName" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="repoName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Repository Name</label>
+                                <input type="text" id="repoName" name="repoName" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" required>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="saveAppBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Save
+                    </button>
+                    <button type="button" id="cancelAppBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const sidebar = document.getElementById('sidebar');
+            const openSidebarBtn = document.getElementById('openSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+            const addAppBtn = document.getElementById('addAppBtn');
+            const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
+            const appModal = document.getElementById('appModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const appForm = document.getElementById('appForm');
+            const appIdInput = document.getElementById('appId');
+            const appNameInput = document.getElementById('appName');
+            const repoNameInput = document.getElementById('repoName');
+            const saveAppBtn = document.getElementById('saveAppBtn');
+            const cancelAppBtn = document.getElementById('cancelAppBtn');
+            
+            // Sidebar toggle
+            if (openSidebarBtn) {
+                openSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.remove('-translate-x-full');
+                });
+            }
+            
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.add('-translate-x-full');
+                });
+            }
+            
+            // Modal functions
+            function openModal(isEdit = false, appData = null) {
+                appModal.classList.remove('hidden');
+                appModal.classList.add('animate-fade-in');
+                
+                if (isEdit && appData) {
+                    modalTitle.textContent = 'Edit Application';
+                    appIdInput.value = appData.id;
+                    appNameInput.value = appData.app_name;
+                    repoNameInput.value = appData.repo_name;
+                } else {
+                    modalTitle.textContent = 'Add New Application';
+                    appForm.reset();
+                    appIdInput.value = '';
+                }
+            }
+            
+            function closeModal() {
+                appModal.classList.add('hidden');
+                appForm.reset();
+            }
+            
+            // Event listeners for opening the modal
+            if (addAppBtn) {
+                addAppBtn.addEventListener('click', () => openModal());
+            }
+            
+            if (emptyStateAddBtn) {
+                emptyStateAddBtn.addEventListener('click', () => openModal());
+            }
+            
+            // Event listener for closing the modal
+            if (cancelAppBtn) {
+                cancelAppBtn.addEventListener('click', closeModal);
+            }
+            
+            // Save application
+            if (saveAppBtn) {
+                saveAppBtn.addEventListener('click', async () => {
+                    if (!appNameInput.value || !repoNameInput.value) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Please fill in all fields',
+                            icon: 'error',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                        return;
+                    }
+                    
+                    const appId = appIdInput.value;
+                    const data = {
+                        app_name: appNameInput.value,
+                        repo_name: repoNameInput.value
+                    };
+                    
+                    try {
+                        let url = '/api/apps';
+                        let method = 'POST';
+                        
+                        if (appId) {
+                            url = `/api/apps/${appId}`;
+                            method = 'PUT';
+                        }
+                        
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: result.message,
+                                icon: 'success',
+                                confirmButtonColor: '#3b82f6'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: result.message,
+                                icon: 'error',
+                                confirmButtonColor: '#3b82f6'
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    }
+                });
+            }
+            
+            // Edit application
+            document.querySelectorAll('.edit-app-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const appCard = e.target.closest('[data-app-id]');
+                    if (!appCard) return;
+                    
+                    const appId = appCard.dataset.appId;
+                    try {
+                        const response = await fetch(`/api/apps`);
+                        const apps = await response.json();
+                        const appData = apps.find(app => app.id == appId);
+                        
+                        if (appData) {
+                            openModal(true, appData);
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to load application data',
+                            icon: 'error',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    }
+                });
+            });
+            
+            // Delete application
+            document.querySelectorAll('.delete-app-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const appCard = e.target.closest('[data-app-id]');
+                    if (!appCard) return;
+                    
+                    const appId = appCard.dataset.appId;
+                    const appName = appCard.querySelector('h3').textContent;
+                    
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `Do you want to delete ${appName}? This will remove all associated files and configurations.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#3b82f6',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            try {
+                                const response = await fetch(`/api/apps/${appId}`, {
+                                    method: 'DELETE'
+                                });
+                                
+                                const data = await response.json();
+                                
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Deleted!',
+                                        text: data.message,
+                                        icon: 'success',
+                                        confirmButtonColor: '#3b82f6'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message,
+                                        icon: 'error',
+                                        confirmButtonColor: '#3b82f6'
+                                    });
+                                }
+                            } catch (error) {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Failed to delete the application',
+                                    icon: 'error',
+                                    confirmButtonColor: '#3b82f6'
+                                });
+                            }
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

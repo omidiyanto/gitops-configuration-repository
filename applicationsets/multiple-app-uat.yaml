@@ -3,46 +3,43 @@ kind: ApplicationSet
 metadata:
   name: dynamic-apps-uat
 spec:
+  generators:
+  - matrix:
+      generators:
+      - list:
+          elements:
+          - app: flask-weatherapp
+            repo: flask-weatherapp
+      - pullRequest:
+          github:
+            owner: omidiyanto
+            repo: '{{ .repo }}'
+          requeueAfterSeconds: 10
   goTemplate: true
   goTemplateOptions:
-    - missingkey=error
-  generators:
-    - matrix:
-        generators:
-          - list:
-              elements:
-                - app: flask-weatherapp
-                  repo: flask-weatherapp
-          - pullRequest:
-              github:
-                owner: omidiyanto
-                repo: '{{ .repo }}'
-                # tokenRef:
-                #   key: token
-                #   secretName: github-token
-              requeueAfterSeconds: 10
+  - missingkey=error
   template:
     metadata:
-      name: "{{ .app }}-{{ .branch_slug }}-{{ .number }}"
+      name: '{{ .app }}-{{ .branch_slug }}-{{ .number }}'
       namespace: argocd
     spec:
+      destination:
+        namespace: '{{ .app }}-{{ .branch_slug }}-{{ .number }}'
+        server: https://kubernetes.default.svc
+      project: default
       source:
-        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
-        targetRevision: HEAD
-        path: apps/{{ .app }}
         helm:
           parameters:
-            - name: namespace
-              value: '{{ .app }}-{{ .branch_slug }}-{{ .number }}'
-            - name: image.tag
-              value: '{{ .head_sha }}'
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: "{{ .app }}-{{ .branch_slug }}-{{ .number }}"
-      project: default
+          - name: namespace
+            value: '{{ .app }}-{{ .branch_slug }}-{{ .number }}'
+          - name: image.tag
+            value: '{{ .head_sha }}'
+        path: apps/{{ .app }}
+        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
+        targetRevision: HEAD
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
-          - CreateNamespace=true
+        - CreateNamespace=true
