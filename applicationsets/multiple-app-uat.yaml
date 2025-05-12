@@ -16,6 +16,7 @@ spec:
           - pullRequest:
               github:
                 owner: omidiyanto
+                repo: '{{ .repo }}'
                 # tokenRef:
                 #   key: token
                 #   secretName: github-token
