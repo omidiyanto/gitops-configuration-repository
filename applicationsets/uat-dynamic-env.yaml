@@ -11,18 +11,25 @@ spec:
         github:
           owner: omidiyanto
           repo: flask-weatherapp
-          labels:
-            - preview
-        requeueAfterSeconds: 60
+          # tokenRef:
+          #   key: token
+          #   secretName: github-token # (2)
+        requeueAfterSeconds: 10
   template:
     metadata:
       name: "flask-weatherapp-{{ .branch_slug }}-{{ .number }}"
       namespace: argocd
     spec:
       source:
-        repoURL: https://github.com/omidiyanto/flask-weatherapp.git
-        targetRevision: "{{ .head_sha }}"
-        path: helm/flask-weatherapp
+        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
+        targetRevision: HEAD
+        path: apps/flask-weatherapp
+        helm:
+          parameters:
+            - name: namespace
+              value: 'flask-weatherapp-{{ .branch_slug }}-{{ .number }}'
+            - name: image.tag
+              value: '{{ .head_sha }}'
       destination:
         server: https://kubernetes.default.svc
         namespace: "flask-weatherapp-{{ .branch_slug }}-{{ .number }}"
