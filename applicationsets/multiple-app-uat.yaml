@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dynamic-apps-uat
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - app: flask-weatherapp
+                  repo: flask-weatherapp
+          - pullRequest:
+              github:
+                owner: omidiyanto
+                # tokenRef:
+                #   key: token
+                #   secretName: github-token
+              requeueAfterSeconds: 10
+  template:
+    metadata:
+      name: "{{ .app }}-{{ .branch_slug }}-{{ .number }}"
+      namespace: argocd
+    spec:
+      source:
+        repoURL: https://github.com/omidiyanto/gitops-configuration-repository.git
+        targetRevision: HEAD
+        path: apps/{{ .app }}
+        helm:
+          parameters:
+            - name: namespace
+              value: '{{ .app }}-{{ .branch_slug }}-{{ .number }}'
+            - name: image.tag
+              value: '{{ .head_sha }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ .app }}-{{ .branch_slug }}-{{ .number }}"
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
