@@ -97,10 +97,12 @@ def get_apps():
 def create_app():
     data = request.json
     app_name = data.get('app_name')
-    repo_name = data.get('repo_name')
     
-    if not app_name or not repo_name:
-        return jsonify({'success': False, 'message': 'App name and repo name are required'}), 400
+    if not app_name:
+        return jsonify({'success': False, 'message': 'Application name is required'}), 400
+    
+    # Always use app_name as repo_name
+    repo_name = app_name
     
     try:
         # Add to database
@@ -152,10 +154,12 @@ def delete_app(app_id):
 def update_app(app_id):
     data = request.json
     new_app_name = data.get('app_name')
-    new_repo_name = data.get('repo_name')
     
-    if not new_app_name or not new_repo_name:
-        return jsonify({'success': False, 'message': 'App name and repo name are required'}), 400
+    if not new_app_name:
+        return jsonify({'success': False, 'message': 'Application name is required'}), 400
+    
+    # Always use app_name as repo_name
+    new_repo_name = new_app_name
     
     try:
         conn = get_db()
@@ -208,7 +212,7 @@ def update_appset_file(app_name, repo_name, action):
         # Add new app
         elements.append({
             'app': app_name,
-            'repo': repo_name
+            'repo': app_name  # Always use app_name as repo_name
         })
     elif action == 'delete':
         # Remove app
@@ -242,7 +246,7 @@ def create_app_directory(app_name, repo_name):
     with open(os.path.join(EXAMPLE_APP_DIR, 'uat', 'values.yaml'), 'r') as f:
         values_yaml = yaml.safe_load(f)
     
-    values_yaml['image']['repository'] = f"omidiyanto/{repo_name}"
+    values_yaml['image']['repository'] = f"omidiyanto/{app_name}"  # Use app_name instead of repo_name
     
     with open(os.path.join(uat_dir, 'values.yaml'), 'w') as f:
         yaml.dump(values_yaml, f, default_flow_style=False)
