@@ -160,7 +160,7 @@ def update_app(app_id):
     
     # Always use app_name as repo_name
     new_repo_name = new_app_name
-    
+     
     try:
         conn = get_db()
         old_app = conn.execute('SELECT * FROM applications WHERE id = ?', (app_id,)).fetchone()
